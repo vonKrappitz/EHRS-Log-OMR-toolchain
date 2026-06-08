@@ -1,0 +1,46 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using the metadata below."
+title: "EHRS Log OMR toolchain"
+abstract: >-
+  Capture tooling for the EHRS Log, the data-capture instrument of the European
+  HEMS Operational Reporting Standard (EHRS): three OMR-optimised paper forms
+  (pilot, doctor, dispatcher) and a reader that turns scanned sheets into a
+  structured Excel workbook. The doctor card is anonymous by design (pooled and
+  shuffled before serial assignment), in line with GDPR data minimisation.
+type: software
+authors:
+  - family-names: Kasperek
+    given-names: Maciej
+    orcid: "https://orcid.org/0009-0008-7419-0851"
+version: "1.0.0"
+date-released: "2026-06-08"
+license: Apache-2.0
+repository-code: "https://github.com/vonKrappitz/ehrs-omr"
+url: "https://github.com/vonKrappitz/ehrs-omr"
+keywords:
+  - HEMS
+  - helicopter emergency medical services
+  - operational reporting
+  - optical mark recognition
+  - OMR
+  - GDPR data minimisation
+  - open science
+# --- After the first GitHub release is archived on Zenodo, uncomment and fill: ---
+# doi: "10.5281/zenodo.XXXXXXX"
+# identifiers:
+#   - type: doi
+#     value: "10.5281/zenodo.XXXXXXX"
+#     description: "Archived release on Zenodo"
+#
+# --- Once the SJTREM article is published, you may also add it as the preferred
+#     citation so that "Cite this repository" points at the paper: ---
+# preferred-citation:
+#   type: article
+#   title: "Pan-European HEMS Operational Reporting: A Proposed Standard with Retrospective Validation on Five Operators (2020-2024)"
+#   authors:
+#     - family-names: Kasperek
+#       given-names: Maciej
+#       orcid: "https://orcid.org/0009-0008-7419-0851"
+#   journal: "Scandinavian Journal of Trauma, Resuscitation and Emergency Medicine"
+#   year: 2026
+#   doi: "10.XXXX/XXXXX"
