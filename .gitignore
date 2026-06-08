@@ -1,0 +1,11 @@
+venv/
+.venv/
+__pycache__/
+*.pyc
+# user run output (the committed EHRS_capture_SAMPLE.xlsx is the reference)
+EHRS_capture.xlsx
+# round-trip test intermediates
+blank_*.png
+prev_*.png
+*.zip
+.DS_Store
