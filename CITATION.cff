@@ -25,11 +25,11 @@ keywords:
   - OMR
   - GDPR data minimisation
   - open science
- doi: "10.5281/zenodo.XXXXXXX"
- identifiers:
-   - type: doi
-     value: "10.5281/zenodo.20592467"
-     description: "Archived release on Zenodo"
+doi: "10.5281/zenodo.XXXXXXX"
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.20592467"
+    description: "Archived release on Zenodo"
 
 # --- Once the SJTREM article is published, you may also add it as the preferred
 #     citation so that "Cite this repository" points at the paper: ---
