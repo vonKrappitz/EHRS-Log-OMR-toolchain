@@ -170,4 +170,4 @@ Apache-2.0. Copyright 2026 Maciej M. Kasperek (vonKrappitz). See `LICENSE` and `
 If you use this toolchain, please cite the accompanying SJTREM article and this
 repository. Citation metadata is provided in `CITATION.cff`, which GitHub renders
 as a "Cite this repository" button. A permanent archived version with a DOI is
-available on Zenodo: `<add Zenodo DOI here on deposit>`.
+available on Zenodo: `10.5281/zenodo.20592467`.
