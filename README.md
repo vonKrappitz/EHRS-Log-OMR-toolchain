@@ -165,7 +165,7 @@ the instrument measures the system, not the patient.
 
 ## License and citation
 
-Apache-2.0. Copyright 2026 Maciej Kasperek. See `LICENSE` and `NOTICE`.
+Apache-2.0. Copyright 2026 Maciej M. Kasperek (vonKrappitz). See `LICENSE` and `NOTICE`.
 
 If you use this toolchain, please cite the accompanying SJTREM article and this
 repository. Citation metadata is provided in `CITATION.cff`, which GitHub renders
