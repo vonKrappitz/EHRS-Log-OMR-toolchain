@@ -1,7 +1,0 @@
-# EHRS Log OMR toolchain - Python dependencies
-# Reader (omr_reader.py) needs: opencv, numpy, openpyxl
-# Form generation (generate_ehrs_forms.py) additionally needs: reportlab
-opencv-python-headless>=4.5
-numpy>=1.21
-openpyxl>=3.0
-reportlab>=4.0
