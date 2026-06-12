@@ -13,7 +13,7 @@ authors:
     given-names: Maciej M.
     orcid: "https://orcid.org/0009-0008-7419-0851"
 version: "1.1.0"
-date-released: "2026-01-01"   # UWAGA: ustaw na rzeczywista date wydania 1.1.0
+date-released: "2026-06-12" 
 license: Apache-2.0
 repository-code: "https://github.com/vonKrappitz/EHRS-Log-OMR-toolchain"
 url: "https://github.com/vonKrappitz/EHRS-Log-OMR-toolchain"
@@ -33,5 +33,3 @@ identifiers:
   - type: doi
     value: "10.5281/zenodo.20652220"
     description: "Version DOI for v1.1.0 (assigned by Zenodo at deposit; fill in after release)"
-# Korekta wobec 1.0.0: tam 20592467 bylo blednie opisane jako Concept DOI.
-# 20592467 to DOI WERSYJNY 1.0.0. Koncepcyjny to 20592466. Zweryfikowane API Zenodo.
