@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: Apache-2.0
-# Copyright 2026 Maciej Kasperek
+# Copyright 2026 Maciej M. Kasperek (vonKrappitz)
 """
 Round-trip self-test for the EHRS Log OMR reader.
 
