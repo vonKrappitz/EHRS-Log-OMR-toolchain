@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: Apache-2.0
-# Copyright 2026 Maciej Kasperek
+# Copyright 2026 Maciej M. Kasperek (vonKrappitz)
 """
 Generate the three OMR-optimised EHRS Log data-capture forms
 (pilot / doctor / dispatcher) as print-ready A4 PDFs, plus a layout
