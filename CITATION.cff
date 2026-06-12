@@ -31,7 +31,7 @@ identifiers:
     value: "10.5281/zenodo.20592466"
     description: "Concept DOI on Zenodo (resolves to the latest archived version)"
   - type: doi
-    value: "10.5281/zenodo.XXXXXXXX"
+    value: "10.5281/zenodo.20652220"
     description: "Version DOI for v1.1.0 (assigned by Zenodo at deposit; fill in after release)"
 # Korekta wobec 1.0.0: tam 20592467 bylo blednie opisane jako Concept DOI.
 # 20592467 to DOI WERSYJNY 1.0.0. Koncepcyjny to 20592466. Zweryfikowane API Zenodo.
