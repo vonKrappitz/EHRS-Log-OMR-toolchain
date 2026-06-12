@@ -34,6 +34,24 @@ FID = 30.0
 FID_SIDE = 16.0
 FID_CENTRES = [(FID, FID), (W - FID, FID), (FID, H - FID), (W - FID, H - FID)]
 
+# orientation pip: a small SOLID square placed asymmetrically near the top-left
+# fiducial. It breaks the 180-degree symmetry of the four corner fiducials so the
+# reader can tell an upright scan from an upside-down one. Kept small enough
+# (area well below the fiducial lower bound) that the reader never mistakes it
+# for a fifth fiducial.
+ORIENT_PIP_SIDE = 8.0
+# One solid mark per form, each in its own slot down the left margin. A single
+# mark still breaks the 180-degree symmetry (orientation), and WHICH slot is
+# marked encodes WHICH form it is (identity). All three forms share the same
+# four corner fiducials, so the reader can align a page before it knows the
+# form, then read the slot to identify it. The mark carries form TYPE only,
+# identical on every card of a kind, so the doctor card stays unlinkable.
+MARK_SLOTS = {
+    "pilot":      (FID, H - 92.0),
+    "doctor":     (FID, H - 112.0),
+    "dispatcher": (FID, H - 132.0),
+}
+
 BUBBLE_R = 6.0          # categorical bubble radius (~4.2 mm dia)
 DIGIT_R = 5.0           # digit-grid bubble radius
 LINE = 14.0             # base line height
@@ -61,6 +79,16 @@ class Form:
         for (cx, cy) in FID_CENTRES:
             c.rect(cx - FID_SIDE / 2, cy - FID_SIDE / 2, FID_SIDE, FID_SIDE, stroke=0, fill=1)
             self.layout["fiducials"].append([round(cx, 2), tl(cy)])
+
+    def orientation_pip(self):
+        """Draw this form's orientation/identity mark in its own slot."""
+        c = self.c
+        cx, cy = MARK_SLOTS[self.key]
+        s = ORIENT_PIP_SIDE
+        c.setFillColorRGB(0, 0, 0)
+        c.rect(cx - s / 2, cy - s / 2, s, s, stroke=0, fill=1)
+        self.layout["orientation_pip"] = {"cx": round(cx, 2), "cy": tl(cy),
+                                          "r": round(s / 2.0, 2)}
 
     def header(self, title, window):
         c = self.c
@@ -266,6 +294,7 @@ def build(full=False, suffix=""):
     c = canvas.Canvas(p, pagesize=A4)
     f = Form("pilot", c, full)
     f.fiducials()
+    f.orientation_pip()
     y = f.header("Pilot operational record", "Completed by the pilot at shutdown (about 2 minutes). Linked to the mission record via Mission ID.")
     y = f.fill_instruction(y)
     if full:
@@ -301,6 +330,7 @@ def build(full=False, suffix=""):
     c = canvas.Canvas(p, pagesize=A4)
     f = Form("doctor", c, full)
     f.fiducials()
+    f.orientation_pip()
     y = f.header("Clinical card", "Completed by the physician after handover (about 3 minutes).")
     y = f.fill_instruction(y)
     y = f.note(y, ["Standalone anonymous card. No date. Not linked to flight, crew, or patient identity.",
@@ -325,6 +355,7 @@ def build(full=False, suffix=""):
     c = canvas.Canvas(p, pagesize=A4)
     f = Form("dispatcher", c, full)
     f.fiducials()
+    f.orientation_pip()
     y = f.header("Dispatch shift wrap-up", "Completed by the dispatcher at end of shift (about 3 minutes). Shift-level aggregates, no patient records.")
     y = f.fill_instruction(y)
     y = f.note(y, ["Captures the missed-case denominator. Calls received and missions launched are imported;",
@@ -357,11 +388,19 @@ def build(full=False, suffix=""):
     paths["dispatcher"] = p
 
     layout = {
-        "ehrs_forms_version": "v1.0",
+        "ehrs_forms_version": "v1.1",
         "page_size_pt": [round(W, 2), round(H, 2)],
         "coordinate_origin": "top-left",
         "units": "pt",
         "fiducial_side_pt": FID_SIDE,
+        "orientation_pip_side_pt": ORIENT_PIP_SIDE,
+        "orientation_id": {
+            "slots": [
+                {"form": k, "cx": round(x, 2), "cy": tl(y),
+                 "r": round(ORIENT_PIP_SIDE / 2.0, 2)}
+                for k, (x, y) in MARK_SLOTS.items()
+            ]
+        },
         "forms": forms_layout,
     }
     with open(os.path.join(OUTDIR, "EHRS_forms_layout%s.json" % suffix), "w") as fh:

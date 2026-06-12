@@ -10,10 +10,10 @@ abstract: >-
 type: software
 authors:
   - family-names: Kasperek
-    given-names: Maciej Marcin
+    given-names: Maciej
     orcid: "https://orcid.org/0009-0008-7419-0851"
-version: "1.0.0"
-date-released: "2026-06-08"
+version: "1.1.0"
+date-released: "2026-01-01"   # UWAGA: ustaw na rzeczywista date wydania 1.1.0
 license: Apache-2.0
 repository-code: "https://github.com/vonKrappitz/EHRS-Log-OMR-toolchain"
 url: "https://github.com/vonKrappitz/EHRS-Log-OMR-toolchain"
@@ -25,21 +25,13 @@ keywords:
   - OMR
   - GDPR data minimisation
   - open science
-doi: "10.5281/zenodo.XXXXXXX"
+doi: "10.5281/zenodo.20592466"
 identifiers:
   - type: doi
-    value: "10.5281/zenodo.20592467"
-    description: "Archived release on Zenodo"
-
-# --- Once the SJTREM article is published, you may also add it as the preferred
-#     citation so that "Cite this repository" points at the paper: ---
-# preferred-citation:
-#   type: article
-#   title: "Pan-European HEMS Operational Reporting: A Proposed Standard with Retrospective Validation on Five Operators (2020-2024)"
-#   authors:
-#     - family-names: Kasperek
-#       given-names: Maciej Marcin
-#       orcid: "https://orcid.org/0009-0008-7419-0851"
-#   journal: "Scandinavian Journal of Trauma, Resuscitation and Emergency Medicine"
-#   year: 2026
-#   doi: "10.XXXX/XXXXX"
+    value: "10.5281/zenodo.20592466"
+    description: "Concept DOI on Zenodo (resolves to the latest archived version)"
+  - type: doi
+    value: "10.5281/zenodo.XXXXXXXX"
+    description: "Version DOI for v1.1.0 (assigned by Zenodo at deposit; fill in after release)"
+# Korekta wobec 1.0.0: tam 20592467 bylo blednie opisane jako Concept DOI.
+# 20592467 to DOI WERSYJNY 1.0.0. Koncepcyjny to 20592466. Zweryfikowane API Zenodo.

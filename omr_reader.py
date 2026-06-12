@@ -24,6 +24,7 @@ import glob
 import json
 import os
 import random
+import sys
 
 import cv2
 import numpy as np
@@ -58,9 +59,16 @@ def load_gray(path):
 
 
 def find_fiducials(gray):
-    """Return the four corner fiducial centres in pixels, ordered TL, TR, BL, BR."""
+    """Return (four corner fiducial centres in pixels ordered TL, TR, BL, BR,
+    page-global Otsu threshold).
+
+    NOTE: corners are assigned by nearest image corner. Page orientation is then
+    resolved downstream by build_homography_oriented() using the asymmetric
+    orientation pip, so a 180-degree rotation is detected and read correctly.
+    Forms without a pip (<= v1.0 layouts) are assumed upright.
+    """
     h, w = gray.shape
-    _, bw = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+    otsu_t, bw = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
     bw = cv2.morphologyEx(bw, cv2.MORPH_CLOSE, np.ones((3, 3), np.uint8))
     cnts, _ = cv2.findContours(bw, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     area = w * h
@@ -88,7 +96,7 @@ def find_fiducials(gray):
                 bestd, best, bi = d, (cx, cy), i
         used.add(bi)
         chosen.append(best)
-    return np.array(chosen, dtype=np.float32)
+    return np.array(chosen, dtype=np.float32), float(otsu_t)
 
 
 def build_homography(form_layout, fid_px):
@@ -96,13 +104,29 @@ def build_homography(form_layout, fid_px):
     H, _ = cv2.findHomography(src, fid_px)
     return H
 
+def build_homography_oriented(form_layout, fid_px, gray, thresh=128):
+    """Map layout points to pixels, choosing upright vs 180-degree using the
+    asymmetric orientation pip. The upright assignment gives H0; the 180-degree
+    assignment reverses the four image corners. The orientation whose pip
+    location reads dark wins. Layouts without a pip (<= v1.0 forms) are read
+    upright, preserving backward compatibility."""
+    src = np.array(fiducials_ordered(form_layout), dtype=np.float32)
+    H0, _ = cv2.findHomography(src, fid_px)
+    pip = form_layout.get("orientation_pip")
+    if not pip:
+        return H0
+    H180, _ = cv2.findHomography(src, fid_px[[3, 2, 1, 0]])
+    f0 = fill_ratio(gray, H0, pip["cx"], pip["cy"], pip["r"], thresh)
+    f180 = fill_ratio(gray, H180, pip["cx"], pip["cy"], pip["r"], thresh)
+    return H0 if f0 >= f180 else H180
+
 
 def map_pt(H, x, y):
     v = H @ np.array([x, y, 1.0])
     return v[0] / v[2], v[1] / v[2]
 
 
-def fill_ratio(gray, H, cx, cy, r):
+def fill_ratio(gray, H, cx, cy, r, thresh=128):
     px, py = map_pt(H, cx, cy)
     rx, ry = map_pt(H, cx + r, cy)
     rad = max(3.0, ((rx - px) ** 2 + (ry - py) ** 2) ** 0.5) * INTERIOR
@@ -114,11 +138,11 @@ def fill_ratio(gray, H, cx, cy, r):
     patch = gray[y0:y1, x0:x1]
     if patch.size == 0:
         return 0.0
-    return float((patch < 128).mean())
+    return float((patch < thresh).mean())
 
 
 # ----------------------------- form reading -----------------------------
-def read_form(gray, form_layout, H, fill_thresh=FILL_THRESH):
+def read_form(gray, form_layout, H, fill_thresh=FILL_THRESH, dark_thresh=128):
     out, flags = {}, {}
     for fid, spec in form_layout["fields"].items():
         t = spec["type"]
@@ -127,7 +151,7 @@ def read_form(gray, form_layout, H, fill_thresh=FILL_THRESH):
         elif t == "digit_key":
             digits, multi = "", False
             for place in spec["places"]:
-                ratios = [(b["digit"], fill_ratio(gray, H, b["cx"], b["cy"], b["r"]))
+                ratios = [(b["digit"], fill_ratio(gray, H, b["cx"], b["cy"], b["r"], dark_thresh))
                           for b in place["bubbles"]]
                 marked = [d for d, rr in ratios if rr >= fill_thresh]
                 if len(marked) == 1:
@@ -141,7 +165,7 @@ def read_form(gray, form_layout, H, fill_thresh=FILL_THRESH):
             if multi:
                 flags[fid] = "multi"
         elif t == "bubble_single":
-            ratios = [(o["value"], fill_ratio(gray, H, o["cx"], o["cy"], o["r"]))
+            ratios = [(o["value"], fill_ratio(gray, H, o["cx"], o["cy"], o["r"], dark_thresh))
                       for o in spec["options"]]
             marked = [v for v, rr in ratios if rr >= fill_thresh]
             if len(marked) == 1:
@@ -157,7 +181,7 @@ def read_form(gray, form_layout, H, fill_thresh=FILL_THRESH):
             for sub, sd in spec["subcounts"].items():
                 digits, ok = "", True
                 for place in sd["places"]:
-                    ratios = [(b["digit"], fill_ratio(gray, H, b["cx"], b["cy"], b["r"]))
+                    ratios = [(b["digit"], fill_ratio(gray, H, b["cx"], b["cy"], b["r"], dark_thresh))
                               for b in place["bubbles"]]
                     marked = [d for d, rr in ratios if rr >= fill_thresh]
                     if len(marked) == 1:
@@ -178,10 +202,14 @@ def process_images(layout, form_key, image_paths, fill_thresh=FILL_THRESH):
     fl = layout["forms"][form_key]
     records = []
     for p in sorted(image_paths):
-        gray = load_gray(p)
-        fid_px = find_fiducials(gray)
-        H = build_homography(fl, fid_px)
-        rec, flags = read_form(gray, fl, H, fill_thresh)
+        try:
+            gray = load_gray(p)
+            fid_px, dark_thresh = find_fiducials(gray)
+            H = build_homography_oriented(fl, fid_px, gray, dark_thresh)
+            rec, flags = read_form(gray, fl, H, fill_thresh, dark_thresh)
+        except Exception as e:
+            sys.stderr.write("Warning: skipping %s (%s)\n" % (p, e))
+            continue
         rec["_source"] = os.path.basename(p)
         rec["_flags"] = ";".join("%s:%s" % (k, v) for k, v in flags.items())
         records.append(rec)
@@ -190,6 +218,59 @@ def process_images(layout, form_key, image_paths, fill_thresh=FILL_THRESH):
         for i, rec in enumerate(records, 1):
             rec["D01"] = "EHRS-%05d" % i
     return records
+
+
+def identify_form(layout, gray, fid_px, thresh=128):
+    """Identify a scan's form (and orientation) from the per-form marker. All
+    forms share the four corner fiducials, so the homography is computed without
+    knowing the form; the marked slot then names the form. Returns (form_key, H)
+    for the best (orientation, slot), or (None, None) if no marker reads dark
+    (e.g. a marker-less v1.0 form)."""
+    oid = layout.get("orientation_id")
+    if not oid:
+        return None, None
+    any_form = next(iter(layout["forms"].values()))
+    src = np.array(fiducials_ordered(any_form), dtype=np.float32)
+    H0, _ = cv2.findHomography(src, fid_px)
+    H180, _ = cv2.findHomography(src, fid_px[[3, 2, 1, 0]])
+    best_form, best_H, best_fill = None, None, -1.0
+    for H in (H0, H180):
+        for slot in oid["slots"]:
+            f = fill_ratio(gray, H, slot["cx"], slot["cy"], slot["r"], thresh)
+            if f > best_fill:
+                best_form, best_H, best_fill = slot["form"], H, f
+    if best_fill < 0.5:
+        return None, None
+    return best_form, best_H
+
+
+def process_images_auto(layout, image_paths, fill_thresh=FILL_THRESH):
+    """Route a flat folder of MIXED scans to per-form streams using the marker,
+    so the operator need not sort scans into subfolders. Returns
+    {form_key: [records]}. Doctor cards are pooled, shuffled and serialised
+    exactly as in process_images, so anonymity is preserved."""
+    streams = {}
+    for p in sorted(image_paths):
+        try:
+            gray = load_gray(p)
+            fid_px, dark_thresh = find_fiducials(gray)
+            form_key, H = identify_form(layout, gray, fid_px, dark_thresh)
+            if form_key is None:
+                sys.stderr.write("Warning: skipping %s (no form/orientation marker)\n" % p)
+                continue
+            fl = layout["forms"][form_key]
+            rec, flags = read_form(gray, fl, H, fill_thresh, dark_thresh)
+        except Exception as e:
+            sys.stderr.write("Warning: skipping %s (%s)\n" % (p, e))
+            continue
+        rec["_source"] = os.path.basename(p)
+        rec["_flags"] = ";".join("%s:%s" % (k, v) for k, v in flags.items())
+        streams.setdefault(form_key, []).append(rec)
+    if "doctor" in streams:
+        random.shuffle(streams["doctor"])
+        for i, rec in enumerate(streams["doctor"], 1):
+            rec["D01"] = "EHRS-%05d" % i
+    return streams
 
 
 # ----------------------------- excel output -----------------------------
@@ -246,6 +327,7 @@ def main():
     ap.add_argument("--root", help="folder with pilot/ doctor/ dispatcher/ subfolders of images")
     ap.add_argument("--form", choices=["pilot", "doctor", "dispatcher"], help="single form type")
     ap.add_argument("--images", help="glob of images for --form mode")
+    ap.add_argument("--auto", help="flat folder of MIXED scans; reader routes each to its form via the marker")
     ap.add_argument("--out", default="EHRS_capture.xlsx")
     ap.add_argument("--seed", type=int, default=None, help="shuffle seed (reproducibility)")
     args = ap.parse_args()
@@ -253,7 +335,12 @@ def main():
         random.seed(args.seed)
     layout = load_layout(args.layout)
     all_records = {}
-    if args.root:
+    if args.auto:
+        imgs = []
+        for ext in ("*.png", "*.jpg", "*.jpeg", "*.tif", "*.tiff"):
+            imgs += glob.glob(os.path.join(args.auto, ext))
+        all_records = process_images_auto(layout, imgs)
+    elif args.root:
         for fk in ("pilot", "doctor", "dispatcher"):
             d = os.path.join(args.root, fk)
             imgs = []
@@ -264,7 +351,7 @@ def main():
     elif args.form and args.images:
         all_records[args.form] = process_images(layout, args.form, glob.glob(args.images))
     else:
-        ap.error("provide --root, or --form together with --images")
+        ap.error("provide --auto, --root, or --form together with --images")
     write_excel(all_records, layout, args.out)
     n = sum(len(v) for v in all_records.values())
     print("wrote %s  (%d records across %d streams)" % (args.out, n, len(all_records)))
