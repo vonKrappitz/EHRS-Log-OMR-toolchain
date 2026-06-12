@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.1.0 (unreleased, set date at release)
+## v1.1.0 (12.06.2026)
 
 Robustness improvements and a new orientation marker. Backward compatible with v1.0 forms.
 
