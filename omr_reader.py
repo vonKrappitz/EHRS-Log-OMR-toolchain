@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: Apache-2.0
-# Copyright 2026 Maciej Kasperek
+# Copyright 2026 Maciej M. Kasperek (vonKrappitz)
 """
 EHRS Log OMR reader (proof of concept).
 
