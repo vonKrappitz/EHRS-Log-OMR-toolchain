@@ -3,7 +3,7 @@
 Capture tooling for the **EHRS Log**, the data-capture instrument of the European
 HEMS Operational Reporting Standard (EHRS). It contains three OMR-optimised A4
 forms (pilot / doctor / dispatcher) and a reader that turns scanned paper sheets
-into a structured Excel workbook. Proof of concept accompanying the SJTREM
+into a structured Excel workbook. Proof of concept accompanying the EHRS
 manuscript.
 
 The reader finds the four printed corner marks on a scan, corrects rotation and
