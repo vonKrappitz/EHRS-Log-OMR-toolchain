@@ -1,5 +1,5 @@
 {
-  "ehrs_forms_version": "v1.0",
+  "ehrs_forms_version": "v1.1",
   "page_size_pt": [
     595.28,
     841.89
@@ -7,6 +7,29 @@
   "coordinate_origin": "top-left",
   "units": "pt",
   "fiducial_side_pt": 16.0,
+  "orientation_pip_side_pt": 8.0,
+  "orientation_id": {
+    "slots": [
+      {
+        "form": "pilot",
+        "cx": 30.0,
+        "cy": 52.0,
+        "r": 4.0
+      },
+      {
+        "form": "doctor",
+        "cx": 30.0,
+        "cy": 68.0,
+        "r": 4.0
+      },
+      {
+        "form": "dispatcher",
+        "cx": 30.0,
+        "cy": 84.0,
+        "r": 4.0
+      }
+    ]
+  },
   "forms": {
     "pilot": {
       "fiducials": [
@@ -538,6 +561,11 @@
             }
           ]
         }
+      },
+      "orientation_pip": {
+        "cx": 30.0,
+        "cy": 52.0,
+        "r": 4.0
       }
     },
     "doctor": {
@@ -798,6 +826,11 @@
             }
           ]
         }
+      },
+      "orientation_pip": {
+        "cx": 30.0,
+        "cy": 68.0,
+        "r": 4.0
       }
     },
     "dispatcher": {
@@ -1749,6 +1782,11 @@
             }
           }
         }
+      },
+      "orientation_pip": {
+        "cx": 30.0,
+        "cy": 84.0,
+        "r": 4.0
       }
     }
   }
